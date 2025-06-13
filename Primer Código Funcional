@@ -1,0 +1,277 @@
+# bedsense_full_app.py
+import sys
+import bcrypt
+import mysql.connector
+import requests
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton,
+                             QMessageBox, QComboBox, QStackedWidget, QTableWidget, QTableWidgetItem, QFormLayout, QHBoxLayout)
+
+# --------------------- Configuración ---------------------
+DB_CONFIG = {
+    'host': '34.176.13.152',
+    'user': 'root',
+    'password': '0]4~H|->]Dx$f6:a',
+    'database': 'bedsense_db'
+}
+
+API_URL = "https://api.apis.net.pe/v1/dni?numero="
+API_TOKEN = "TU_TOKEN_AQUI"  # Reemplazar con token válido
+
+# --------------------- Conexión ---------------------
+def get_connection():
+    return mysql.connector.connect(**DB_CONFIG)
+
+# --------------------- Verificación ---------------------
+def verificar_usuario(usuario, password):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT password_hash, rol FROM usuarios WHERE usuario = %s", (usuario,))
+        row = cursor.fetchone()
+        if row and bcrypt.checkpw(password.encode(), row[0].encode()):
+            return row[1]
+    except Exception as e:
+        print("Error de login:", e)
+    return None
+
+# --------------------- Login ---------------------
+class Login(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("BEDSENSE - Login")
+        layout = QVBoxLayout()
+
+        self.usuario_input = QLineEdit()
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        login_btn = QPushButton("Ingresar")
+        login_btn.clicked.connect(self.login)
+
+        layout.addWidget(QLabel("Usuario:"))
+        layout.addWidget(self.usuario_input)
+        layout.addWidget(QLabel("Contraseña:"))
+        layout.addWidget(self.password_input)
+        layout.addWidget(login_btn)
+        self.setLayout(layout)
+
+    def login(self):
+        usuario = self.usuario_input.text()
+        password = self.password_input.text()
+        rol = verificar_usuario(usuario, password)
+        if rol:
+            self.main = Principal(usuario, rol)
+            self.main.show()
+            self.close()
+        else:
+            QMessageBox.warning(self, "Error", "Credenciales incorrectas")
+
+# --------------------- Ventana Principal ---------------------
+class Principal(QMainWindow):
+    def __init__(self, usuario, rol):
+        super().__init__()
+        self.setWindowTitle(f"BEDSENSE - {usuario} ({rol})")
+        self.resize(900, 600)
+
+        self.panel = QStackedWidget()
+        self.setCentralWidget(self.panel)
+
+        if rol == "admin":
+            self.panel_camas = PanelCamas(rol)
+            self.panel_admin = PanelAdmin()
+            contenedor = QWidget()
+            layout = QVBoxLayout()
+
+            botones = QHBoxLayout()
+            btn_camas = QPushButton("Gestión de camas")
+            btn_usuarios = QPushButton("Gestionar usuarios")
+            btn_camas.clicked.connect(lambda: self.panel.setCurrentWidget(self.panel_camas))
+            btn_usuarios.clicked.connect(lambda: self.panel.setCurrentWidget(self.panel_admin))
+            botones.addWidget(btn_camas)
+            botones.addWidget(btn_usuarios)
+
+            layout.addLayout(botones)
+            layout.addWidget(self.panel)
+            contenedor.setLayout(layout)
+            self.setCentralWidget(contenedor)
+
+            self.panel.addWidget(self.panel_camas)
+            self.panel.addWidget(self.panel_admin)
+            self.panel.setCurrentWidget(self.panel_camas)
+        else:
+            self.panel.addWidget(PanelCamas(rol))
+
+# --------------------- Panel Admin ---------------------
+class PanelAdmin(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+
+        self.input_user = QLineEdit()
+        self.input_pass = QLineEdit()
+        self.input_pass.setEchoMode(QLineEdit.EchoMode.Password)
+        self.combo_rol = QComboBox()
+        self.combo_rol.addItems(["admin", "medico", "enfermera", "tecnico", "limpieza"])
+        crear_btn = QPushButton("Crear usuario")
+        crear_btn.clicked.connect(self.crear_usuario)
+
+        form = QFormLayout()
+        form.addRow("Usuario:", self.input_user)
+        form.addRow("Contraseña:", self.input_pass)
+        form.addRow("Rol:", self.combo_rol)
+        layout.addLayout(form)
+        layout.addWidget(crear_btn)
+
+        self.setLayout(layout)
+
+    def crear_usuario(self):
+        user = self.input_user.text()
+        pwd = self.input_pass.text()
+        rol = self.combo_rol.currentText()
+        pwd_hash = bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO usuarios (usuario, password_hash, rol) VALUES (%s, %s, %s)", (user, pwd_hash, rol))
+            conn.commit()
+            QMessageBox.information(self, "Éxito", "Usuario creado")
+        except Exception as e:
+            QMessageBox.warning(self, "Error", str(e))
+
+# --------------------- Panel Camas ---------------------
+class PanelCamas(QWidget):
+    def __init__(self, rol):
+        super().__init__()
+        self.rol = rol
+        layout = QVBoxLayout()
+        self.area_combo = QComboBox()
+        self.tabla = QTableWidget()
+
+        layout.addWidget(QLabel("Área hospitalaria"))
+        layout.addWidget(self.area_combo)
+        layout.addWidget(self.tabla)
+
+        if rol in ["medico", "enfermera"]:
+            self.dni = QLineEdit()
+            self.nombre = QLineEdit()
+            asignar_btn = QPushButton("Asignar paciente")
+            asignar_btn.clicked.connect(self.asignar)
+            f = QFormLayout()
+            f.addRow("DNI:", self.dni)
+            f.addRow("Nombre:", self.nombre)
+            layout.addLayout(f)
+            layout.addWidget(asignar_btn)
+        elif rol == "tecnico":
+            btn = QPushButton("Alternar operatividad")
+            btn.clicked.connect(self.operatividad)
+            layout.addWidget(btn)
+        elif rol == "limpieza":
+            btn = QPushButton("Marcar como limpia")
+            btn.clicked.connect(self.limpiar)
+            layout.addWidget(btn)
+
+        self.setLayout(layout)
+        self.cargar_areas()
+
+    def cargar_areas(self):
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT nombre FROM areas")
+            self.area_combo.clear()
+            self.area_combo.addItems([r[0] for r in cursor.fetchall()])
+            self.area_combo.currentTextChanged.connect(self.cargar_camas)
+            self.cargar_camas()
+        except Exception as e:
+            QMessageBox.warning(self, "Error", str(e))
+
+    def cargar_camas(self):
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT c.id, c.ubicacion, c.disponible, c.paciente_dni, c.paciente_nombre
+                FROM camas c
+                JOIN cama_area ca ON c.id = ca.cama_id
+                JOIN areas a ON ca.area_id = a.id
+                LEFT JOIN limpieza_camas lc ON c.id = lc.cama_id
+                LEFT JOIN estado_equipos ee ON c.id = ee.cama_id
+                WHERE a.nombre = %s
+                  AND (c.paciente_dni IS NULL OR c.paciente_dni = '')
+                  AND (lc.limpieza_realizada IS TRUE)
+                  AND (ee.operatividad IS TRUE)
+            ''', (self.area_combo.currentText(),))
+            rows = cursor.fetchall()
+            self.tabla.setRowCount(len(rows))
+            self.tabla.setColumnCount(5)
+            self.tabla.setHorizontalHeaderLabels(["ID", "Ubicación", "Disponible", "DNI", "Nombre"])
+            for i, fila in enumerate(rows):
+                for j, val in enumerate(fila):
+                    self.tabla.setItem(i, j, QTableWidgetItem(str(val)))
+        except Exception as e:
+            QMessageBox.warning(self, "Error", str(e))
+
+    def cama_seleccionada(self):
+        row = self.tabla.currentRow()
+        if row >= 0:
+            return int(self.tabla.item(row, 0).text())
+        return None
+
+    def asignar(self):
+        cama_id = self.cama_seleccionada()
+        if not cama_id:
+            return
+
+        dni_paciente = self.dni.text()
+        nombre_paciente = self.nombre.text()
+
+        if not nombre_paciente.strip():
+            try:
+                headers = {"Authorization": f"Bearer {API_TOKEN}"}
+                response = requests.get(API_URL + dni_paciente, headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    nombre_paciente = f"{data['nombres']} {data['apellidoPaterno']} {data['apellidoMaterno']}"
+                    self.nombre.setText(nombre_paciente)
+                else:
+                    QMessageBox.warning(self, "Error", "DNI no encontrado o token inválido.")
+                    return
+            except Exception as e:
+                QMessageBox.warning(self, "Error", str(e))
+                return
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE camas SET disponible = FALSE, paciente_dni = %s, paciente_nombre = %s WHERE id = %s",
+                       (dni_paciente, nombre_paciente, cama_id))
+        conn.commit()
+        self.cargar_camas()
+
+    def limpiar(self):
+        cama_id = self.cama_seleccionada()
+        if not cama_id:
+            return
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("REPLACE INTO limpieza_camas (cama_id, limpieza_realizada) VALUES (%s, TRUE)", (cama_id,))
+        conn.commit()
+        self.cargar_camas()
+
+    def operatividad(self):
+        cama_id = self.cama_seleccionada()
+        if not cama_id:
+            return
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT operatividad FROM estado_equipos WHERE cama_id = %s", (cama_id,))
+        actual = cursor.fetchone()
+        nuevo_estado = not actual[0] if actual else True
+        cursor.execute("REPLACE INTO estado_equipos (cama_id, operatividad) VALUES (%s, %s)", (cama_id, nuevo_estado))
+        conn.commit()
+        self.cargar_camas()
+
+# --------------------- Ejecución ---------------------
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    login = Login()
+    login.show()
+    sys.exit(app.exec())
