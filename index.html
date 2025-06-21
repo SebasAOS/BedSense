@@ -1,52 +1,1093 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bedsense - Gestión de Camas Hospitalarias</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Bedsense - Sistema de Gestión de Camas Hospitalarias</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #0d47a1;
+            --secondary: #00c853;
+            --accent: #ff4081;
+            --light: #f8f9fa;
+            --dark: #212121;
+            --gray: #757575;
+            --light-gray: #f5f5f5;
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Header y Navegación */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            margin-right: 0.75rem;
+            color: var(--secondary);
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .hamburger {
+            display: none;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1473&q=80') no-repeat center center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 0 2rem;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .hero h2 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--secondary);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+        
+        .btn:hover {
+            background: #009624;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        /* Secciones */
+        section {
+            padding: 6rem 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        
+        .section-title p {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        /* Características */
+        .features {
+            background-color: white;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .feature-icon {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+        }
+        
+        .feature-content {
+            padding: 1.5rem;
+        }
+        
+        .feature-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        /* Tecnologías */
+        .tech {
+            background-color: var(--light-gray);
+        }
+        
+        .tech-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .tech-item {
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .tech-icon {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .tech-icon:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .tech-icon i {
+            font-size: 3.5rem;
+            color: var(--primary);
+        }
+        
+        .tech-item h3 {
+            font-size: 1.3rem;
+            color: var(--dark);
+        }
+        
+        /* Galería */
+        .gallery {
+            background-color: white;
+        }
+        
+        .gallery-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .gallery-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+        
+        .tab-btn {
+            padding: 0.8rem 1.5rem;
+            background: var(--light-gray);
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .gallery-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .gallery-item {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            position: relative;
+            height: 250px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.03);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+        
+        .gallery-item.video {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--dark);
+        }
+        
+        .gallery-item.video i {
+            font-size: 4rem;
+            color: white;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+        
+        .gallery-item.video:hover i {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: var(--transition);
+        }
+        
+        .gallery-item:hover .gallery-caption {
+            transform: translateY(0);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            position: relative;
+            margin: 5% auto;
+            width: 80%;
+            max-width: 1200px;
+            animation: fadeIn 0.5s;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .close-modal:hover {
+            color: var(--accent);
+        }
+        
+        /* Instalación y Contribución */
+        .install-contribute {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        
+        .ic-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .ic-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .ic-box:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .ic-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .ic-box h3 i {
+            margin-right: 1rem;
+            color: var(--secondary);
+        }
+        
+        .ic-box ul {
+            list-style: none;
+            margin: 2rem 0;
+        }
+        
+        .ic-box li {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+        
+        .ic-box li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        
+        /* Licencia */
+        .license {
+            background-color: var(--light-gray);
+            text-align: center;
+        }
+        
+        .license-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .license-content h3 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .license-content p {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .license-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 2rem 2rem;
+        }
+        
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-col h4 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--accent);
+        }
+        
+        .footer-col ul {
+            list-style: none;
+        }
+        
+        .footer-col ul li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-col ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer-col ul li a:hover {
+            color: var(--secondary);
+            padding-left: 5px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: var(--transition);
+        }
+        
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 3rem;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero h2 {
+                font-size: 2.8rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                right: -100%;
+                flex-direction: column;
+                background: var(--primary);
+                width: 100%;
+                text-align: center;
+                transition: 0.5s;
+                padding: 2rem 0;
+                box-shadow: var(--shadow);
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .nav-links li {
+                margin: 1.5rem 0;
+            }
+            
+            .hero h2 {
+                font-size: 2.3rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .ic-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            section {
+                padding: 4rem 1.5rem;
+            }
+            
+            .gallery-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Header -->
     <header>
-        <h1>Bedsense</h1>
         <nav>
-            <a href="index.html">Inicio</a>
-            <a href="gallery.html">Galería</a>
+            <div class="logo">
+                <i class="fas fa-procedures"></i>
+                <h1>Bedsense</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Características</a></li>
+                <li><a href="#tech">Tecnologías</a></li>
+                <li><a href="#gallery">Galería</a></li>
+                <li><a href="#install">Instalación</a></li>
+                <li><a href="#contribute">Contribuir</a></li>
+            </ul>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
         </nav>
     </header>
 
-    <main>
-        <section class="intro">
-            <h2>¿Qué es Bedsense?</h2>
-            <p>Bedsense es un sistema de gestión en tiempo real de camas hospitalarias que permite a los administradores de hospitales monitorear la disponibilidad de camas por área. El software proporciona una vista clara de cuántas camas están ocupadas y cuántas están libres, mejorando la eficiencia operativa y la toma de decisiones en el manejo de recursos hospitalarios.</p>
-        </section>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Optimizando la Gestión de Camas Hospitalarias</h2>
+            <p>Monitoreo en tiempo real para mejorar la eficiencia operativa y la toma de decisiones en hospitales</p>
+            <a href="#features" class="btn">Ver más</a>
+        </div>
+    </section>
 
-        <section class="features">
-            <h2>Características</h2>
-            <ul>
-                <li>Monitoreo en tiempo real: Visualización de la ocupación de camas por área.</li>
-                <li>Gestión eficiente: Seguimiento de camas disponibles y ocupadas para mejorar la asignación de recursos.</li>
-                <li>Base de datos: Utiliza Google SQL con MySQL para la gestión y almacenamiento de datos.</li>
-            </ul>
-        </section>
+    <!-- Características -->
+    <section id="features" class="features">
+        <div class="section-title">
+            <h2>Características Principales</h2>
+            <p>Bedsense ofrece una solución completa para la gestión de recursos hospitalarios</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Monitoreo en Tiempo Real</h3>
+                    <p>Seguimiento instantáneo de la disponibilidad de camas en todas las áreas del hospital, con actualizaciones automáticas y sin demoras.</p>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Gestión Eficiente</h3>
+                    <p>Visualización clara de camas ocupadas y disponibles, optimizando la asignación de recursos y reduciendo tiempos de espera.</p>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Base de Datos Segura</h3>
+                    <p>Utilización de Google SQL con MySQL para garantizar un almacenamiento confiable, escalable y seguro de los datos hospitalarios.</p>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Reportes y Análisis</h3>
+                    <p>Generación de informes detallados y análisis de tendencias para la mejora continua de los procesos hospitalarios.</p>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Acceso Multiplataforma</h3>
+                    <p>Interfaz responsive que funciona en computadoras de escritorio, tablets y dispositivos móviles para acceso en cualquier lugar.</p>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Alertas Automáticas</h3>
+                    <p>Notificaciones en tiempo real cuando se liberan camas o cuando se alcanzan niveles críticos de ocupación.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <section class="tech">
-            <h2>Tecnologías</h2>
-            <ul>
-                <li>Python para el desarrollo del sistema.</li>
-                <li>Google SQL con MySQL para la base de datos.</li>
-            </ul>
-        </section>
+    <!-- Tecnologías -->
+    <section id="tech" class="tech">
+        <div class="section-title">
+            <h2>Tecnologías Utilizadas</h2>
+            <p>Desarrollado con las mejores herramientas para garantizar rendimiento y confiabilidad</p>
+        </div>
+        
+        <div class="tech-container">
+            <div class="tech-item">
+                <div class="tech-icon">
+                    <i class="fab fa-python"></i>
+                </div>
+                <h3>Python</h3>
+                <p>Lenguaje principal para el desarrollo del sistema backend</p>
+            </div>
+            
+            <div class="tech-item">
+                <div class="tech-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>Google SQL</h3>
+                <p>Base de datos MySQL gestionada en la nube de Google</p>
+            </div>
+            
+            <div class="tech-item">
+                <div class="tech-icon">
+                    <i class="fab fa-js"></i>
+                </div>
+                <h3>JavaScript</h3>
+                <p>Para funcionalidades interactivas en la interfaz web</p>
+            </div>
+            
+            <div class="tech-item">
+                <div class="tech-icon">
+                    <i class="fab fa-html5"></i>
+                </div>
+                <h3>HTML5 & CSS3</h3>
+                <p>Para la construcción de interfaces modernas y responsivas</p>
+            </div>
+            
+            <div class="tech-item">
+                <div class="tech-icon">
+                    <i class="fab fa-git"></i>
+                </div>
+                <h3>Git & GitHub</h3>
+                <p>Control de versiones y gestión del repositorio</p>
+            </div>
+        </div>
+    </section>
 
-        <section class="audience">
-            <h2>¿A quién va dirigido?</h2>
-            <p>Este sistema está diseñado para administradores de hospitales, personal médico y responsables de la gestión de recursos hospitalarios, permitiendo un manejo más eficiente y transparente de la disponibilidad de camas.</p>
-        </section>
-    </main>
+    <!-- Galería -->
+    <section id="gallery" class="gallery">
+        <div class="section-title">
+            <h2>Galería Multimedia</h2>
+            <p>Explora nuestra solución a través de imágenes y videos demostrativos</p>
+        </div>
+        
+        <div class="gallery-container">
+            <div class="gallery-tabs">
+                <button class="tab-btn active" data-tab="all">Todo</button>
+                <button class="tab-btn" data-tab="images">Imágenes</button>
+                <button class="tab-btn" data-tab="videos">Videos</button>
+            </div>
+            
+            <div class="gallery-content">
+                <!-- Imágenes -->
+                <div class="gallery-item" data-type="images">
+                    <img src="https://images.unsplash.com/photo-1581595219318-a446274a0d84?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Dashboard de Bedsense">
+                    <div class="gallery-caption">Dashboard principal con vista general</div>
+                </div>
+                
+                <div class="gallery-item" data-type="images">
+                    <img src="https://images.unsplash.com/photo-1581595219318-a446274a0d84?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Detalle de área">
+                    <div class="gallery-caption">Vista detallada de una área hospitalaria</div>
+                </div>
+                
+                <div class="gallery-item" data-type="images">
+                    <img src="https://images.unsplash.com/photo-1581595219318-a446274a0d84?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Reportes analíticos">
+                    <div class="gallery-caption">Reportes analíticos y estadísticas</div>
+                </div>
+                
+                <!-- Videos -->
+                <div class="gallery-item video" data-type="videos" data-video="https://www.youtube.com/embed/dQw4w9WgXcQ">
+                    <i class="fas fa-play-circle"></i>
+                    <div class="gallery-caption">Demo del sistema completo</div>
+                </div>
+                
+                <div class="gallery-item video" data-type="videos" data-video="https://www.youtube.com/embed/dQw4w9WgXcQ">
+                    <i class="fas fa-play-circle"></i>
+                    <div class="gallery-caption">Tutorial de instalación</div>
+                </div>
+                
+                <div class="gallery-item video" data-type="videos" data-video="https://www.youtube.com/embed/dQw4w9WgXcQ">
+                    <i class="fas fa-play-circle"></i>
+                    <div class="gallery-caption">Gestión de camas en tiempo real</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <!-- Modal para videos -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <iframe id="videoFrame" width="100%" height="600" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <!-- Instalación y Contribución -->
+    <section class="install-contribute">
+        <div class="ic-container">
+            <div id="install" class="ic-box">
+                <h3><i class="fas fa-download"></i> Instalación</h3>
+                <p>Para instalar y configurar Bedsense en tu entorno hospitalario, sigue estos pasos:</p>
+                <ul>
+                    <li>Clona el repositorio de GitHub</li>
+                    <li>Configura el entorno virtual de Python</li>
+                    <li>Instala las dependencias con pip</li>
+                    <li>Configura la conexión a Google Cloud SQL</li>
+                    <li>Ejecuta las migraciones de base de datos</li>
+                    <li>Inicia el servidor de desarrollo</li>
+                </ul>
+                <p>Las instrucciones detalladas estarán disponibles una vez el proyecto esté completo.</p>
+                <a href="#" class="btn">Documentación Completa</a>
+            </div>
+            
+            <div id="contribute" class="ic-box">
+                <h3><i class="fas fa-hands-helping"></i> Contribuir</h3>
+                <p>¡Agradecemos contribuciones para mejorar Bedsense! Sigue estas pautas:</p>
+                <ul>
+                    <li>Revisa los issues existentes o crea uno nuevo</li>
+                    <li>Haz un fork del repositorio</li>
+                    <li>Crea una rama para tu feature o corrección</li>
+                    <li>Realiza tus cambios y pruebas correspondientes</li>
+                    <li>Envía un pull request con una descripción detallada</li>
+                </ul>
+                <a href="#" class="btn">Ver Repositorio</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Licencia -->
+    <section class="license">
+        <div class="section-title">
+            <h2>Licencia</h2>
+            <p>Bedsense es distribuido bajo una licencia de código abierto</p>
+        </div>
+        
+        <div class="license-content">
+            <div class="license-icon">
+                <i class="fab fa-creative-commons"></i>
+            </div>
+            <h3>Licencia MIT</h3>
+            <p>Bedsense es software de código abierto licenciado bajo la Licencia MIT. Esto significa que puedes usar, copiar, modificar, fusionar, publicar, distribuir, sublicenciar y/o vender copias del software, siempre que incluyas el aviso de copyright y este permiso en todas las copias.</p>
+            <p>El software se proporciona "TAL CUAL", sin garantía de ningún tipo, expresa o implícita. Para más detalles, consulta el archivo LICENSE en el repositorio.</p>
+            <a href="#" class="btn">Ver Licencia Completa</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer>
-        <p>Proyecto en desarrollo. Abierto a contribuciones en GitHub.</p>
+        <div class="footer-container">
+            <div class="footer-col">
+                <h4>Bedsense</h4>
+                <p>Solución innovadora para la gestión de camas hospitalarias en tiempo real, mejorando la eficiencia operativa y la toma de decisiones.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Enlaces Rápidos</h4>
+                <ul>
+                    <li><a href="#features">Características</a></li>
+                    <li><a href="#tech">Tecnologías</a></li>
+                    <li><a href="#gallery">Galería</a></li>
+                    <li><a href="#install">Instalación</a></li>
+                    <li><a href="#contribute">Contribuir</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Recursos</h4>
+                <ul>
+                    <li><a href="#">Documentación</a></li>
+                    <li><a href="#">API Reference</a></li>
+                    <li><a href="#">Guías de Implementación</a></li>
+                    <li><a href="#">Preguntas Frecuentes</a></li>
+                    <li><a href="#">Changelog</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Contacto</h4>
+                <ul>
+                    <li><i class="fas fa-envelope"></i> info@bedsense.com</li>
+                    <li><i class="fas fa-phone"></i> +1 (123) 456-7890</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Ciudad Tecnológica, Innovation Hub</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; 2023 Bedsense. Todos los derechos reservados. Licencia MIT.</p>
+        </div>
     </footer>
+
+    <script>
+        // Navegación responsive
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+        
+        // Tabs de galería
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Quitar clase active de todos los botones
+                tabBtns.forEach(b => b.classList.remove('active'));
+                // Agregar clase active al botón clickeado
+                btn.classList.add('active');
+                
+                const filter = btn.getAttribute('data-tab');
+                
+                galleryItems.forEach(item => {
+                    if (filter === 'all' || item.getAttribute('data-type') === filter) {
+                        item.style.display = 'block';
+                        // Agregar animación
+                        item.style.animation = 'fadeIn 0.5s forwards';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Modal de video
+        const modal = document.getElementById('videoModal');
+        const videoItems = document.querySelectorAll('.gallery-item.video');
+        const videoFrame = document.getElementById('videoFrame');
+        const closeModal = document.querySelector('.close-modal');
+        
+        videoItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const videoUrl = item.getAttribute('data-video') + '?autoplay=1';
+                videoFrame.setAttribute('src', videoUrl);
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevenir scroll
+            });
+        });
+        
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none';
+            videoFrame.setAttribute('src', '');
+            document.body.style.overflow = 'auto'; // Restaurar scroll
+        });
+        
+        // Cerrar modal al hacer clic fuera del contenido
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                videoFrame.setAttribute('src', '');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Animaciones al hacer scroll
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.feature-card, .tech-item, .ic-box, .license-content');
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const screenPosition = window.innerHeight / 1.3;
+                
+                if (elementPosition < screenPosition) {
+                    element.style.animation = 'fadeIn 0.8s forwards';
+                }
+            });
+        };
+        
+        window.addEventListener('scroll', animateOnScroll);
+        // Ejecutar al cargar para elementos visibles inicialmente
+        window.addEventListener('load', animateOnScroll);
+        
+        // Smooth scrolling para enlaces de navegación
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Cerrar menú móvil si está abierto
+                    if (navLinks.classList.contains('active')) {
+                        navLinks.classList.remove('active');
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
